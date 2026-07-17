@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "graphtools"
+version = "0.1.0"
+description = "Tools for generating and analyzing sets of unique connected graphs"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "networkx>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+graphgen = "graphtools.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/graphtools"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
