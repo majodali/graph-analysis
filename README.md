@@ -60,6 +60,23 @@ for g6 in generate_graph6(9, connected=True):
     ...
 ```
 
+Drawing:
+
+```python
+from graphtools import generate_graphs
+from graphtools.draw import draw_grid, draw_3d
+
+# Static 2D gallery of small multiples (matplotlib)
+draw_grid(generate_graphs(5), "connected5.png")
+
+# Interactive 3D view (plotly), saved as self-contained HTML
+draw_3d(next(generate_graphs(9, edges=12)), "graph.html")
+```
+
+`draw_grid` accepts networkx graphs or raw graph6 strings and supports
+`layout="kamada_kawai" | "spring" | "circular" | "shell"`. Layouts are
+seeded, so the same graph always draws the same way.
+
 CLI:
 
 ```sh
