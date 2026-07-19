@@ -74,8 +74,10 @@ draw_3d(next(generate_graphs(9, edges=12)), "graph.html")
 ```
 
 `draw_grid` accepts networkx graphs or raw graph6 strings and supports
-`layout="kamada_kawai" | "spring" | "circular" | "shell"`. Layouts are
-seeded, so the same graph always draws the same way.
+`layout="kamada_kawai" | "planar" | "spring" | "circular" | "shell"`.
+The planar layout guarantees a crossing-free drawing whenever the graph
+is planar (non-planar graphs like K5 fall back to kamada_kawai). Layouts
+are seeded, so the same graph always draws the same way.
 
 CLI:
 

@@ -6,8 +6,31 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import pytest
 
-from graphtools.draw import as_graph, draw_3d, draw_grid
+from graphtools.draw import _layout_2d, as_graph, draw_3d, draw_grid
 from graphtools.generate import generate_graph6, generate_graphs
+
+
+def _segments_cross(p1, p2, p3, p4):
+    """True if open segments p1-p2 and p3-p4 properly intersect."""
+
+    def ccw(a, b, c):
+        return (c[1] - a[1]) * (b[0] - a[0]) - (b[1] - a[1]) * (c[0] - a[0])
+
+    d1, d2 = ccw(p3, p4, p1), ccw(p3, p4, p2)
+    d3, d4 = ccw(p1, p2, p3), ccw(p1, p2, p4)
+    return d1 * d2 < 0 and d3 * d4 < 0
+
+
+def count_crossings(g, pos):
+    edges = list(g.edges())
+    crossings = 0
+    for i, (a, b) in enumerate(edges):
+        for c, d in edges[i + 1 :]:
+            if len({a, b, c, d}) == 4 and _segments_cross(
+                pos[a], pos[b], pos[c], pos[d]
+            ):
+                crossings += 1
+    return crossings
 
 
 @pytest.fixture(autouse=True)
@@ -48,6 +71,24 @@ def test_grid_unknown_layout():
 def test_grid_empty():
     with pytest.raises(ValueError):
         draw_grid([])
+
+
+def test_planar_layout_has_no_crossings():
+    # Every connected 5-vertex graph except K5 is planar and must draw
+    # crossing-free under the planar layout.
+    for g in generate_graphs(5):
+        if nx.check_planarity(g)[0]:
+            pos = _layout_2d(g, "planar")
+            assert count_crossings(g, pos) == 0
+
+
+def test_planar_layout_falls_back_for_nonplanar(tmp_path):
+    k5 = nx.complete_graph(5)
+    pos = _layout_2d(k5, "planar")
+    assert len(pos) == 5
+    out = tmp_path / "k5.png"
+    draw_grid(k5, out, layout="planar")
+    assert out.exists()
 
 
 def test_3d_traces_match_graph(tmp_path):

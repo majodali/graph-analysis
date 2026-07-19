@@ -25,6 +25,7 @@ EDGE_COLOR = "#a3a8b4"
 
 LAYOUTS = {
     "kamada_kawai": nx.kamada_kawai_layout,
+    "planar": nx.planar_layout,
     "spring": nx.spring_layout,
     "circular": nx.circular_layout,
     "shell": nx.shell_layout,
@@ -49,6 +50,10 @@ def _layout_2d(graph: nx.Graph, layout: str) -> dict:
         ) from None
     if layout == "spring":
         return fn(graph, seed=1)
+    if layout == "planar" and not nx.check_planarity(graph)[0]:
+        # Non-planar graphs (K5/K3,3 minors) have no crossing-free
+        # drawing at all; fall back rather than error mid-grid.
+        return nx.kamada_kawai_layout(graph)
     return fn(graph)
 
 
@@ -68,7 +73,10 @@ def draw_grid(
             accepted and drawn alone.
         path: if given, save the figure here (format from extension).
         layout: one of LAYOUTS. kamada_kawai is usually the cleanest for
-            small graphs; spring is seeded for reproducibility.
+            small graphs; spring is seeded for reproducibility. planar
+            guarantees a crossing-free drawing whenever the graph is
+            planar (non-planar graphs fall back to kamada_kawai, since
+            no crossing-free drawing exists for them).
         labels: draw vertex numbers.
         cell_size: side length of each cell in inches.
 
